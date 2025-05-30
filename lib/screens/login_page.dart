@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'home_page.dart';
 import '../session_manager.dart';
+import 'register_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -14,20 +16,31 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController passwordController = TextEditingController();
   String errorMessage = '';
 
-  final String validUsername = 'user';
-  final String validPassword = 'pass';
-
   void _handleLogin() async {
-    if (usernameController.text == validUsername &&
-        passwordController.text == validPassword) {
-      await SessionManager.setLoggedIn(true);
+    final prefs = await SharedPreferences.getInstance();
+    final users = prefs.getStringList('users') ?? [];
+    
+    // Check if username exists
+    if (!users.contains(usernameController.text)) {
+      setState(() {
+        errorMessage = 'Username not found';
+      });
+      return;
+    }
+
+    // Get stored password for the username
+    final storedPassword = prefs.getString('password_${usernameController.text}');
+    
+    // Verify password
+    if (storedPassword == passwordController.text) {
+      await SessionManager.setLoggedIn(true, username: usernameController.text);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => HomePage()),
       );
     } else {
       setState(() {
-        errorMessage = 'Invalid username or password';
+        errorMessage = 'Invalid password';
       });
     }
   }
@@ -159,6 +172,23 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                       SizedBox(height: 15),
+                      
+                      // Tombol Register
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const RegisterPage()),
+                          );
+                        },
+                        child: Text(
+                          "Don't have an account? Register",
+                          style: TextStyle(
+                            color: Color(0xFF00569F),
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),

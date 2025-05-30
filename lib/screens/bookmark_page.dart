@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../model/berita.dart';
 import '../bookmark_service.dart';
+import '../session_manager.dart';
 import 'detail_berita.dart';
 
 class BookmarkPage extends StatefulWidget {
@@ -19,10 +20,21 @@ class _BookmarkPageState extends State<BookmarkPage> {
     _loadBookmarks();
   }
 
-  void _loadBookmarks() {
-    setState(() {
-      _bookmarksFuture = BookmarkService.getBookmarks();
-    });
+  Future<void> _loadBookmarks() async {
+    final username = await SessionManager.getCurrentUser();
+    if (username != null) {
+      setState(() {
+        _bookmarksFuture = BookmarkService.getBookmarks(username);
+      });
+    }
+  }
+
+  Future<void> _removeBookmark(String url) async {
+    final username = await SessionManager.getCurrentUser();
+    if (username != null) {
+      await BookmarkService.removeBookmark(url, username);
+      _loadBookmarks();
+    }
   }
 
   @override
@@ -137,10 +149,7 @@ class _BookmarkPageState extends State<BookmarkPage> {
                         const Spacer(),
                         IconButton(
                           icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () async {
-                            await BookmarkService.removeBookmark(news.link);
-                            _loadBookmarks();
-                          },
+                          onPressed: () => _removeBookmark(news.link),
                         ),
                       ],
                     ),

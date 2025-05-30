@@ -1,35 +1,40 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'model/berita.dart';
-import 'dart:convert'; // INI YANG KURANG!
+import 'dart:convert';
 
 class BookmarkService {
   static const String _bookmarksKey = 'saved_bookmarks';
 
+  // Mendapatkan key bookmark untuk user tertentu
+  static String _getUserBookmarksKey(String username) {
+    return '${_bookmarksKey}_$username';
+  }
+
   // Menyimpan bookmark
-  static Future<void> saveBookmark(NewsItem news) async {
+  static Future<void> saveBookmark(NewsItem news, String username) async {
     final prefs = await SharedPreferences.getInstance();
-    final bookmarks = await getBookmarks();
+    final bookmarks = await getBookmarks(username);
 
     // Cek apakah sudah ada di bookmark
     if (!bookmarks.any((item) => item.link == news.link)) {
       bookmarks.add(news);
-      await prefs.setString(_bookmarksKey, _encodeBookmarks(bookmarks));
+      await prefs.setString(_getUserBookmarksKey(username), _encodeBookmarks(bookmarks));
     }
   }
 
   // Menghapus bookmark
-  static Future<void> removeBookmark(String url) async {
+  static Future<void> removeBookmark(String url, String username) async {
     final prefs = await SharedPreferences.getInstance();
-    final bookmarks = await getBookmarks();
+    final bookmarks = await getBookmarks(username);
 
     bookmarks.removeWhere((item) => item.link == url);
-    await prefs.setString(_bookmarksKey, _encodeBookmarks(bookmarks));
+    await prefs.setString(_getUserBookmarksKey(username), _encodeBookmarks(bookmarks));
   }
 
   // Mendapatkan semua bookmark
-  static Future<List<NewsItem>> getBookmarks() async {
+  static Future<List<NewsItem>> getBookmarks(String username) async {
     final prefs = await SharedPreferences.getInstance();
-    final jsonString = prefs.getString(_bookmarksKey);
+    final jsonString = prefs.getString(_getUserBookmarksKey(username));
 
     if (jsonString == null || jsonString.isEmpty) {
       return [];
@@ -44,8 +49,8 @@ class BookmarkService {
   }
 
   // Mengecek status bookmark
-  static Future<bool> isBookmarked(String url) async {
-    final bookmarks = await getBookmarks();
+  static Future<bool> isBookmarked(String url, String username) async {
+    final bookmarks = await getBookmarks(username);
     return bookmarks.any((item) => item.link == url);
   }
 
