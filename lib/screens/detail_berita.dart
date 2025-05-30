@@ -4,6 +4,7 @@ import 'package:html/parser.dart' as htmlParser;
 import 'package:html/dom.dart' as dom;
 //import 'package:shared_preferences/shared_preferences.dart';
 import '../bookmark_service.dart';
+import '../session_manager.dart';
 import '../model/berita.dart';
 
 // jika mau pakai icon svg rumah
@@ -78,15 +79,26 @@ class _DetailBeritaScrapePageState extends State<DetailBeritaScrapePage> {
   }
 
   Future<void> _checkBookmarkStatus() async {
-    final isBookmarked = await BookmarkService.isBookmarked(widget.url);
-    setState(() {
-      _isBookmarked = isBookmarked;
-    });
+    final username = await SessionManager.getCurrentUser();
+    if (username != null) {
+      final isBookmarked = await BookmarkService.isBookmarked(widget.url, username);
+      setState(() {
+        _isBookmarked = isBookmarked;
+      });
+    }
   }
 
   void _toggleBookmark() async {
+    final username = await SessionManager.getCurrentUser();
+    if (username == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Silakan login terlebih dahulu')),
+      );
+      return;
+    }
+
     if (_isBookmarked) {
-      await BookmarkService.removeBookmark(widget.url);
+      await BookmarkService.removeBookmark(widget.url, username);
     } else {
       final newsItem = NewsItem(
         title: _title,
@@ -100,7 +112,7 @@ class _DetailBeritaScrapePageState extends State<DetailBeritaScrapePage> {
           large: _imageUrl,
         ),
       );
-      await BookmarkService.saveBookmark(newsItem);
+      await BookmarkService.saveBookmark(newsItem, username);
     }
 
     setState(() {
