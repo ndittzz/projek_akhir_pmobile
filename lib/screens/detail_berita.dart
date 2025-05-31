@@ -30,6 +30,7 @@ class _DetailBeritaScrapePageState extends State<DetailBeritaScrapePage> {
   bool _isLoading = true;
   String? _error;
   bool _isBookmarked = false;
+  String? _currentUser;
 
   // Komentar
   final TextEditingController _commentController = TextEditingController();
@@ -43,6 +44,11 @@ class _DetailBeritaScrapePageState extends State<DetailBeritaScrapePage> {
     _checkBookmarkStatus();
     commentBox = Hive.box<Comment>(HiveBoxes.comment);
     _loadComments();
+    SessionManager.getCurrentUser().then((user) {
+      setState(() {
+        _currentUser = user;
+      });
+    });
   }
 
   void _loadComments() {
@@ -65,6 +71,43 @@ class _DetailBeritaScrapePageState extends State<DetailBeritaScrapePage> {
     commentBox.add(comment);
     _commentController.clear();
     _loadComments();
+  }
+
+  void _deleteComment(int index) {
+    final comment = _comments[index];
+    commentBox.delete(comment.key);
+    _loadComments();
+  }
+
+  void _editComment(int index, String oldText) async {
+    final controller = TextEditingController(text: oldText);
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Edit Komentar'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(hintText: 'Edit komentar...'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, controller.text.trim()),
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
+    );
+    if (result != null && result.isNotEmpty) {
+      final comment = _comments[index];
+      comment.text = result;
+      comment.save();
+      _loadComments();
+    }
   }
 
   @override
@@ -269,12 +312,49 @@ class _DetailBeritaScrapePageState extends State<DetailBeritaScrapePage> {
                               itemCount: _comments.length,
                               itemBuilder: (context, index) {
                                 final comment = _comments[index];
+                                final isOwner = _currentUser != null && comment.userName == _currentUser;
                                 return ListTile(
                                   title: Text(comment.text),
                                   subtitle: Text(
                                     '${comment.userName} • ${comment.createdAt.toString().substring(0, 19)}',
-                                    style: const TextStyle(fontSize: 12),
+                                    style: const TextStyle(fontSize: 12, color: Colors.grey),
                                   ),
+                                  trailing: isOwner
+                                      ? Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            IconButton(
+                                              icon: const Icon(Icons.edit, size: 20),
+                                              onPressed: () => _editComment(index, comment.text),
+                                            ),
+                                            IconButton(
+                                              icon: const Icon(Icons.delete, size: 20),
+                                              onPressed: () async {
+                                                final confirm = await showDialog<bool>(
+                                                  context: context,
+                                                  builder: (context) => AlertDialog(
+                                                    title: const Text('Hapus Komentar'),
+                                                    content: const Text('Yakin ingin menghapus komentar ini?'),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () => Navigator.pop(context, false),
+                                                        child: const Text('Batal'),
+                                                      ),
+                                                      TextButton(
+                                                        onPressed: () => Navigator.pop(context, true),
+                                                        child: const Text('Hapus'),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                                if (confirm == true) {
+                                                  _deleteComment(index);
+                                                }
+                                              },
+                                            ),
+                                          ],
+                                        )
+                                      : null,
                                 );
                               },
                             ),

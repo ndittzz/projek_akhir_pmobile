@@ -7,7 +7,7 @@ class Comment extends HiveObject {
   final String beritaUrl;
 
   @HiveField(1)
-  final String text;
+  String text;
 
   @HiveField(2)
   final DateTime createdAt;
