@@ -6,6 +6,9 @@ import 'package:html/dom.dart' as dom;
 import '../bookmark_service.dart';
 import '../session_manager.dart';
 import '../model/berita.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import '../models/comment.dart';
+import '../models/boxes.dart';
 
 // jika mau pakai icon svg rumah
 
@@ -28,11 +31,46 @@ class _DetailBeritaScrapePageState extends State<DetailBeritaScrapePage> {
   String? _error;
   bool _isBookmarked = false;
 
+  // Komentar
+  final TextEditingController _commentController = TextEditingController();
+  late Box<Comment> commentBox;
+  List<Comment> _comments = [];
+
   @override
   void initState() {
     super.initState();
     _fetchNewsDetail();
     _checkBookmarkStatus();
+    commentBox = Hive.box<Comment>(HiveBoxes.comment);
+    _loadComments();
+  }
+
+  void _loadComments() {
+    setState(() {
+      _comments = commentBox.values
+          .where((c) => c.beritaUrl == widget.url)
+          .toList()
+        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    });
+  }
+
+  void _addComment(String text) async {
+    final userName = await SessionManager.getCurrentUser() ?? 'Anonim';
+    final comment = Comment(
+      beritaUrl: widget.url,
+      text: text,
+      createdAt: DateTime.now(),
+      userName: userName,
+    );
+    commentBox.add(comment);
+    _commentController.clear();
+    _loadComments();
+  }
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchNewsDetail() async {
@@ -66,6 +104,13 @@ class _DetailBeritaScrapePageState extends State<DetailBeritaScrapePage> {
           //_author = authorElement?.text.trim() ?? 'CNN Indonesia';
           _isLoading = false;
         });
+
+        // Tambahkan ini untuk debug
+        print('Judul: $_title');
+        print('Tanggal: $_date');
+        print('Gambar: $_imageUrl');
+        print('Isi: $_content');
+        print('URL: ${widget.url}');
       } else {
         throw Exception(
             "Gagal mengambil data (Status code: ${response.statusCode})");
@@ -212,6 +257,44 @@ class _DetailBeritaScrapePageState extends State<DetailBeritaScrapePage> {
                       Text(
                         _content,
                         style: const TextStyle(fontSize: 16, height: 1.5),
+                      ),
+                      const SizedBox(height: 24),
+                      const Text('Komentar', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                      const SizedBox(height: 8),
+                      _comments.isEmpty
+                          ? const Text('Belum ada komentar.')
+                          : ListView.builder(
+                              shrinkWrap: true,
+                              physics: NeverScrollableScrollPhysics(),
+                              itemCount: _comments.length,
+                              itemBuilder: (context, index) {
+                                final comment = _comments[index];
+                                return ListTile(
+                                  title: Text(comment.text),
+                                  subtitle: Text(
+                                    '${comment.userName} • ${comment.createdAt.toString().substring(0, 19)}',
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                );
+                              },
+                            ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _commentController,
+                              decoration: const InputDecoration(hintText: 'Tulis komentar...'),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.send),
+                            onPressed: () {
+                              if (_commentController.text.trim().isNotEmpty) {
+                                _addComment(_commentController.text.trim());
+                              }
+                            },
+                          ),
+                        ],
                       ),
                     ],
                   ),
