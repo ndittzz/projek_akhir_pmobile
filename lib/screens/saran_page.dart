@@ -104,13 +104,13 @@ class _SaranPageState extends State<SaranPage>
               children: [
                 _buildContent(
                   "Saran",
-                  'Sangat amat mantab, pembelajaran pemrograman mobile ini sangat '
-                      'menarik dan menyenangkan. Saya sangat senang bisa belajar dengan Pak Bagus.',
+                  'Praktikum teknologi pemrograman mobile ini sangat menarik dan menyenangkan. '
+                  'Saya merasa terbantu dengan bimbingan dari Bang Dejan dan Bang Azkal selama proses pembelajaran.',
                 ),
                 _buildContent(
                   "Kesan",
-                  'Pembelajaran pemrograman mobile ini sangat menyenangkan. '
-                      'Saya sangat senang bisa belajar dengan Pak Bagus.',
+                  'Praktikum ini memberikan pengalaman belajar yang menyenangkan dan bermanfaat. '
+                  'Bang Dejan dan Bang Azkal sangat membantu dan sabar dalam membimbing selama praktikum.',
                 ),
               ],
             ),

@@ -29,6 +29,7 @@ flutter:
 
   assets:
     - assets/images/anggota2.jpg
+    - assets/images/Arif.jpg
     - assets/logos/bg-biru.jpg
     - assets/logos/bg-biru.png
     - assets/logos/bg-putih.jpg
