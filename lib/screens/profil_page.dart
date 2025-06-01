@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projek_akhir_mobile_adit/screens/komen_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'bookmark_page.dart';
 import 'tentang_page.dart';
@@ -201,7 +202,7 @@ class _ProfilPageState extends State<ProfilPage> {
                     child: Column(
                       children: [
                         _buildProfileCard(
-                          imagePath: 'assets/images/anggota1.jpg',
+                          imagePath: 'assets/images/anggota2.jpg',
                           name: 'Mohamad Risqi Aditiya',
                           email: 'mohamadrisqiaditiya@gmail.com',
                           instagramUrl: 'https://instagram.com/risqi.adt',
@@ -211,12 +212,12 @@ class _ProfilPageState extends State<ProfilPage> {
                         ),
                         const SizedBox(height: 32),
                         _buildProfileCard(
-                          imagePath: 'assets/images/anggota2.jpg',
-                          name: 'Nama Anggota Kedua',
-                          email: 'emailanggota2@gmail.com',
-                          instagramUrl: 'https://instagram.com/anggota2',
-                          linkedInUrl: 'https://www.linkedin.com/in/anggota2',
-                          whatsappUrl: 'https://wa.me/628XXXXXXXXXX',
+                          imagePath: 'assets/images/Arif.jpg',
+                          name: 'Arif Fathurrahman',
+                          email: 'ariffathurrahman0@gmail.com',
+                          instagramUrl: 'https://instagram.com/arif.fathur_',
+                          linkedInUrl: 'https://www.linkedin.com/in/arif-fathurrahman/',
+                          whatsappUrl: 'https://wa.me/6285601036974',
                         ),
                       ],
                     ),
@@ -262,8 +263,15 @@ class _ProfilPageState extends State<ProfilPage> {
                             ),
                             _buildToolCard(
                               icon: Icons.article,
-                              title: 'Lihat Beritaku',
+                              title: 'Lihat Komenku',
                               color: Colors.orange,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => const KomenPage()),
+                                );
+                              },
                             ),
                             _buildToolCard(
                               icon: Icons.info,

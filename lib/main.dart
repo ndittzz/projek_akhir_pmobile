@@ -4,8 +4,15 @@ import 'screens/welcome_page.dart';
 import 'screens/home_page.dart';
 import 'session_manager.dart';
 import 'notification_manager.dart'; // <-- Pastikan file ini di-import
+import 'package:hive_flutter/hive_flutter.dart';
+import 'models/comment.dart';
+import 'models/boxes.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+  Hive.registerAdapter(CommentAdapter());
+  await Hive.openBox<Comment>(HiveBoxes.comment);
   runApp(
     ChangeNotifierProvider(
       create: (_) => NotificationManager(),
