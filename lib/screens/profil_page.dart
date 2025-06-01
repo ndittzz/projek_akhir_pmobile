@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projek_akhir_mobile_adit/screens/komen_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'bookmark_page.dart';
 import 'tentang_page.dart';
@@ -262,8 +263,15 @@ class _ProfilPageState extends State<ProfilPage> {
                             ),
                             _buildToolCard(
                               icon: Icons.article,
-                              title: 'Lihat Beritaku',
+                              title: 'Lihat Komenku',
                               color: Colors.orange,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => const KomenPage()),
+                                );
+                              },
                             ),
                             _buildToolCard(
                               icon: Icons.info,
